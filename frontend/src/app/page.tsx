@@ -3,12 +3,12 @@
 
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { signIn} from "../authSlice";
+import { signIn} from "./authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Google from "./google";
-import Github from "./github";
-import X from "./X";
+import Google from "./[auth]/component/google";
+import Github from "./[auth]/component/github";
+import X from "./[auth]/component/X";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function SignInPage() {
