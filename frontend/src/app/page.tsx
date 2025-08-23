@@ -9,43 +9,31 @@ import Link from "next/link";
 import Google from "./[auth]/component/google";
 import Github from "./[auth]/component/github";
 import X from "./[auth]/component/X";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { loginWithEmail } from "../../lib/apiClient";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const supabase = createClientComponentClient();
   const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // サインイン
-    const { data: signInData, error: signInError } =
-      await supabase.auth.signInWithPassword({ email, password });
-    if (signInError) {
-      alert(signInError.message);
-      return;
+    const result = await loginWithEmail(email,password);
+    if(result.token){
+      //トークン保存(logcalStorage & resdux)
+      localStorage.setItem("authToken",result.token);
+      dispatch(
+        signIn({
+          name: result.user?.email || "",
+          iconUrl: result.user?.user_metadata?.avatar_url || "",
+          token: result.token || "",
+        })
+      );
+      setTimeout(() => {
+        router.replace("/redirect");
+      }, 50);
     }
-    // ここでセッション確定を待つ
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
-  if (sessionError || !sessionData.session) {
-    console.error("Session fetch error:", sessionError);
-    alert("ログインに失敗しました。もう一度お試しください。");
-    return;
-  }
-    // Redux 登録
-    dispatch(
-      signIn({
-        name: signInData.user?.email || "",
-        iconUrl: signInData.user?.user_metadata?.avatar_url || "",
-        token: signInData.session?.access_token || "",
-      })
-    );
-
-    setTimeout(() => {
-      router.replace("/redirect");
-    }, 50);
   };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
