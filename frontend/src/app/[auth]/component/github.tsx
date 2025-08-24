@@ -1,18 +1,16 @@
 "use client";
-import { signOut, signIn } from "@/app/authSlice";
-import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import getSocialLoginUrl, { logout, getUserFromCookie } from "@/../../lib/apiClient"; // APIクライアント関数をインポート
+import { getSocialLoginUrl, logout } from "@/../../lib/apiClient"; // APIクライアント関数をインポート
+import { getUserFromCookie } from "@/../../lib/apiClient"; 
 
 type GithubProps = {
   className?: string;
 }
 
 export default function Github({ className }: GithubProps) {
-  const dispatch = useDispatch();
   const [user, setUser] = useState("");
   const router = useRouter();
 
@@ -23,16 +21,10 @@ export default function Github({ className }: GithubProps) {
   
   if (user) {
     setUser(user.name || user.email);
-    dispatch(
-      signIn({
-        name: user.name || user.email,
-        iconUrl: user.avatar || "",
-        token: "cookie-based", // 実際のトークンはCookieに保存されているため、ここでは不要
-      })
-    );
+    
     router.push("/redirect");
   }
-}, [dispatch]);
+}, []);
 
 
   // GitHubログイン処理
@@ -65,7 +57,6 @@ export default function Github({ className }: GithubProps) {
       
       // Reduxの状態をリセット
       setUser("");
-      dispatch(signOut());
       
       // ログインページにリダイレクト
       router.push("/");
