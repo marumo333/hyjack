@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getSocialLoginUrl, logout } from "@/../../lib/apiClient"; // APIクライアント関数をインポート
-import { getUserFromCookie } from "@/../../lib/apiClient"; 
+import { getSocialLoginUrl, logout } from "@/lib/apiClient"; // APIクライアント関数をインポート
+import { getUserFromCookie } from "@/lib/apiClient"; 
 
 type GithubProps = {
   className?: string;

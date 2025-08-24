@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getSocialLoginUrl, logout, getUserFromCookie } from "@/../../lib/apiClient"; // APIクライアント関数をインポート
+import { getSocialLoginUrl, logout, getUserFromCookie } from "@/lib/apiClient"; // APIクライアント関数をインポート
 
 type GoogleProps = {
   className?: string;
@@ -93,7 +93,7 @@ export default function Google({ className }: GoogleProps) {
         ${className}
       `}
     >
-      <Image src="/github.jpg" alt="Github Icon" width={20} height={20} className="h-5 w-5 mr-2" />
+      <Image src="/google.jpg" alt="Google Icon" width={20} height={20} className="h-5 w-5 mr-2" />
       Google
     </button>
   );

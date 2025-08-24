@@ -1,7 +1,7 @@
 "use client"
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getUserFromCookie, getAuthToken, apiGet } from "@/../../lib/apiClient";
+import { getUserFromCookie, getAuthToken, apiGet } from "@/lib/apiClient";
 
 export default function Redirect() {
   const router = useRouter();

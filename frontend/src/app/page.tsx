@@ -6,7 +6,7 @@ import Link from "next/link";
 import Google from "./[auth]/component/google";
 import Github from "./[auth]/component/github";
 import X from "./[auth]/component/X";
-import { loginWithEmail } from "../../lib/apiClient";
+import { loginWithEmail } from "../lib/apiClient";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
