@@ -1,95 +1,82 @@
 "use client";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { signOut,signIn } from "@/app/authSlice";
-import { useSelector, useDispatch } from "react-redux";
+import { signOut, signIn } from "@/app/authSlice";
+import { useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import getSocialLoginUrl, { logout, getUserFromCookie } from "@/../../lib/apiClient"; // APIクライアント関数をインポート
 
 type GithubProps = {
-  className?:string
+  className?: string;
 }
-export default function Google({className}:GithubProps) {
+
+export default function Github({ className }: GithubProps) {
   const dispatch = useDispatch();
   const [user, setUser] = useState("");
   const router = useRouter();
 
-  const supabase = createClientComponentClient();
-
+  // ページロード時に認証状態を確認
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session?.user) {
-          setUser(session.user.email || "Google User");
-          dispatch(
-            signIn({
-              name: session.user.email,
-              iconUrl: "",
-              token: session.provider_token,
-            })
-          );
-          window.localStorage.setItem(
-            "oauth_provider_token",
-            session.provider_token || ""
-          );
-          window.localStorage.setItem(
-            "oauth_provider_refresh_token",
-            session.provider_refresh_token || ""
-          );
-        }
-
-        if (event === "SIGNED_OUT") {
-          window.localStorage.removeItem("oauth_provider_token");
-          window.localStorage.removeItem("oauth_provider_refresh_token");
-          setUser("");
-          dispatch(signOut());
-        }
-      }
+  //Cookieからトークンを確認
+  const user = getUserFromCookie();
+  
+  if (user) {
+    setUser(user.name || user.email);
+    dispatch(
+      signIn({
+        name: user.name || user.email,
+        iconUrl: user.avatar || "",
+        token: "cookie-based", // 実際のトークンはCookieに保存されているため、ここでは不要
+      })
     );
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, [dispatch]);
+    router.push("/redirect");
+  }
+}, [dispatch]);
 
-  useEffect(() => {
-    if (user) {
-      router.push("/redirect");
-    }
-  }, [user, router]);
 
+  // GitHubログイン処理
   const signInGithub = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "github",
-        options: {
-          redirectTo: `${window.location.origin}/redirect`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      });
-      if (error) throw new Error(error.message);
+      // Laravel APIからGitHubログイン用URLを取得
+      const redirectUrl = await getSocialLoginUrl('github');
+      if (redirectUrl) {
+        // GitHubログインページにリダイレクト
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error("リダイレクトURLが取得できませんでした");
+      }
     } catch (error) {
-      console.error("Google認証エラー:", error);
+      console.error("GitHub認証エラー:", error);
     }
   };
 
-  const signOutGoogle = async () => {
+  // ログアウト処理
+  const signOutGithub = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw new Error(error.message);
+      // Laravel APIでログアウト処理
+      const response = await fetch("http://localhost:8000/api/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+      
+      // Cookieを削除
+      logout();
+      
+      // Reduxの状態をリセット
+      setUser("");
       dispatch(signOut());
+      
+      // ログインページにリダイレクト
+      router.push("/");
     } catch (error: any) {
       console.error("ログアウトエラー発生", error.message);
     }
   };
 
-
-  return  user ? (
+  return user ? (
     <button
-      onClick={signOutGoogle}
+      onClick={signOutGithub}
       className={`
       w-full inline-flex items-center justify-center
       py-2 px-4 border border-gray-300 rounded-md shadow-sm
@@ -98,11 +85,11 @@ export default function Google({className}:GithubProps) {
       `}
     >
       <Image
-      src="/github.jpg"
-      alt="Github Icon"
-      width={20}
-      height={20}
-      className="h-5 w-5 mr-2"
+        src="/github.jpg"
+        alt="Github Icon"
+        width={20}
+        height={20}
+        className="h-5 w-5 mr-2"
       />
       ログアウト
     </button>
