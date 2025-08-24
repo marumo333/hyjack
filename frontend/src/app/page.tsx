@@ -1,9 +1,6 @@
 // app/page.tsx ログイン画面
 "use client";
-
 import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { signIn} from "./authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Google from "./[auth]/component/google";
@@ -14,25 +11,17 @@ import { loginWithEmail } from "../../lib/apiClient";
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await loginWithEmail(email,password);
-    if(result.token){
-      //トークン保存(logcalStorage & resdux)
-      localStorage.setItem("authToken",result.token);
-      dispatch(
-        signIn({
-          name: result.user?.email || "",
-          iconUrl: result.user?.user_metadata?.avatar_url || "",
-          token: result.token || "",
-        })
-      );
-      setTimeout(() => {
+    if(result.success){
+      //すでいapiClientでトークンを保存
         router.replace("/redirect");
-      }, 50);
+    }else{
+      //エラー処理
+      alert(result.error||"ログインに失敗しました")
     }
   };
   return (
