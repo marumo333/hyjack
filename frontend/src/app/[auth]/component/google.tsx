@@ -29,7 +29,7 @@ export default function Google({ className }: GoogleProps) {
   const signInGoogle = async () => {
     try {
       // Laravel APIからGitHubログイン用URLを取得
-      const redirectUrl = await getSocialLoginUrl('github');
+      const redirectUrl = await getSocialLoginUrl('google');
       if (redirectUrl) {
         // Googleログインページにリダイレクト
         window.location.href = redirectUrl;
@@ -37,7 +37,7 @@ export default function Google({ className }: GoogleProps) {
         throw new Error("リダイレクトURLが取得できませんでした");
       }
     } catch (error) {
-      console.error("GitHub認証エラー:", error);
+      console.error("Google認証エラー:", error);
     }
   };
 

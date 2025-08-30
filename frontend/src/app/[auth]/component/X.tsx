@@ -29,7 +29,7 @@ export default function X({ className }: XProps) {
   const signInX = async () => {
     try {
       // Laravel APIからGXログイン用URLを取得
-      const redirectUrl = await getSocialLoginUrl('github');
+      const redirectUrl = await getSocialLoginUrl('twitter');
       if (redirectUrl) {
         // Xログインページにリダイレクト
         window.location.href = redirectUrl;
