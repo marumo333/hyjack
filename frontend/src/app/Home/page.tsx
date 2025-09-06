@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { logout, getAuthToken } from "@/lib/apiClient";
+import { logout,getUserFromCookie, isAuthenticated } from "@/lib/apiClient";
 
 export default function HomePage() {
   const [user, setUser] = useState<any>(null);
@@ -11,20 +11,24 @@ export default function HomePage() {
 
   useEffect(() => {
     // 認証状態の確認
-    const checkAuth = async () => {
-      const token = getAuthToken();
-
-      if (!token) {
+    const checkAuth = () => {
+      // Cookieから認証状態を確認
+      if (isAuthenticated()) {
+        const userInfo = getUserFromCookie();
+        if (userInfo) {
+          setUser(userInfo); // ユーザー情報を設定
+          setLoading(false);
+        } else {
+          // トークンはあるがユーザー情報がない場合
+          router.replace("/");
+        }
+      } else {
         // 未認証の場合はログインページへリダイレクト
         router.replace("/");
-        return;
       }
-
-      // 仮のユーザー情報（必要に応じて取得方法を変更してください）
-      setUser({ name: "ユーザー" });
-      setLoading(false);
     };
 
+    // 初期チェック
     checkAuth();
   }, [router]);
 
@@ -48,11 +52,28 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* ヘッダー - 必要に応じて追加 */}
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-semibold">HyJack</h1>
+          <div className="flex items-center space-x-4">
+            <div className="text-sm font-medium text-gray-700">
+              {user?.name || user?.email}
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* メインコンテンツ */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-lg font-medium mb-4">ようこそ、{user?.name || "ゲスト"}さん</h2>
+          <h2 className="text-lg font-medium mb-4">ようこそ、{user?.name || user?.email || "ゲスト"}さん</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
             {/* カード1 */}
