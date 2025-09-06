@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 氷河期世代向け 趣味×ECコミュニティプラットフォーム - HyJack
 
-## Getting Started
+## プロダクト目的・背景
+就職氷河期世代（40〜50代）は、SNSやECの利用に敷居を感じていることが多く、既存サービスは若年層中心で炎上リスクや操作の複雑さが障壁となっています。
+HyJackは「安心・簡単・同世代とつながる」をテーマに、趣味を発信・販売できる場所を提供します。
 
-First, run the development server:
+主な特徴：
+- 年代特化による安心感と文化的共感
+- スマホだけで完結する商品販売
+- 趣味別サークルでの交流・集客
+- EC・ブログ・コミュニティがシームレスに連動
+- メール/パスワード認証と主要SNS認証（Google, GitHub, X）
+- JWTによるセキュアな認証管理
+- Next.js + Laravelによるフロント・バックエンド分離構成
+- Dockerによる開発環境の統一
+
+---
+
+## 起動コマンド
+
+### フロントエンド（Next.js）
 
 ```bash
+cd frontend
+npm install
 npm run dev
-# or
+# または
+yarn install
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
+
+### バックエンド（Laravel）
+
+```bash
+cd backend
+cp .env.example .env
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+```
+
+---
+フロントエンド: http://localhost:3000  
+バックエンドAPI: http://localhost:8000/api
+## HyJack プロダクト概要
+
+HyJackは「多様な認証方式（メール・Google・GitHub・X）を統合し、ユーザーが安心して利用できるWebサービス基盤」を目指したプロジェクトです。
+主な特徴：
+- メール/パスワード認証と主要SNS認証（Google, GitHub, X）
+- JWTによるセキュアな認証管理
+- ユーザー情報の一元管理
+- Next.js + Laravelによるフロント・バックエンド分離構成
+- Dockerによる開発環境の統一
+
+---
+
+## 起動コマンド
+
+### フロントエンド（Next.js）
+
+```bash
+cd frontend
+npm install
+npm run dev
+# または
+yarn install
+yarn dev
+```
+
+### バックエンド（Laravel）
+
+```bash
+cd backend
+cp .env.example .env
+./vendor/bin/sail up -d
+./vendor/bin/sail artisan migrate
+```
+
+---
+フロントエンド: http://localhost:3000  
+バックエンドAPI: http://localhost:8000/api
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
