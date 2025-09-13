@@ -25,13 +25,13 @@ export default function Header() {
     if (!isClient) return null;
   
     return (
-      <>
+      <div>
         {isMobile ? (
           <MobileComponent className="lg:hidden" />
         ) : (
           <PCComponent className="max-lg:hidden" />
         )}
-      </>
+      </div>
     );
   }
   

@@ -41,12 +41,8 @@ export default function PCComponent({ className }: { className?: string }) {
       }
     };
   return (
-    <>
-        <nav
-          className={`flex items-center justify-between border-b border-gray-200 px-4 py-2 ${
-            className ?? ""
-          }`}
-        >
+    <header className={`bg-white ${className}`}>
+      <nav className="flex items-center justify-between border-b border-gray-200 px-4 py-2 max-lg:hidden">
           {/* ロゴ＋タイトル */}
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-2xl font-bold text-blue-900">
@@ -67,6 +63,6 @@ export default function PCComponent({ className }: { className?: string }) {
           </li>
         </ul>
       </nav>
-    </>
+    </header>
   );
 }
