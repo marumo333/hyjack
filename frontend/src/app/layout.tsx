@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/component/Header";
-import  RecoilProvieder  from "./RecoilProvider";
+import RecoilProvider from "./RecoilProvider"; // Recoilを使用している場合
+import AppMantineProvider from "./MantineProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +30,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RecoilProvieder>
-          <Header />
-          {children}
-        </RecoilProvieder>
+        {/* Recoilを使用している場合はネスト */}
+        <RecoilProvider>
+          <AppMantineProvider>
+            <Header />
+            <main className="pt-16">{children}</main>
+          </AppMantineProvider>
+        </RecoilProvider>
       </body>
     </html>
   );
