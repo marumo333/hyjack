@@ -10,6 +10,46 @@ export function isAuthenticated() {
   return !!Cookies.get(TOKEN_COOKIE_NAME);
 }
 
+//ユーザー登録
+export default async function registerUser({
+  email,
+  password,
+  role
+}:{
+  email:string;
+  password:string;
+  role:string
+}){
+  try{
+    const response = await fetch(`${API_BASE}/register`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+      },
+      body:JSON.stringify({email,password,role}),
+    });
+
+    if(!response.ok){
+      const errorData = await response.json();
+      throw new Error(errorData.message||'登録に失敗しました');
+    }
+
+    const data = await response.json();
+
+    //トークンとユーザー情報を保存
+    saveAuthData(data.token,{
+      name:data.user.name,
+      email:data.user.email,
+      avatar:data.user.avatar ||'',
+      role:data.user.role,
+    });
+    return data;
+  }catch(error:any){
+    console.error('登録エラー',error)
+    throw error;
+  }
+}
+
 // ユーザー情報を取得
 export function getUserFromCookie() {
   const userJson = Cookies.get(USER_COOKIE_NAME);
@@ -82,7 +122,7 @@ export function logout() {
 // 認証データを保存
 export function saveAuthData(
   token: string,
-  user: { name: string; email: string; avatar: string }
+  user: { name: string; email: string; avatar: string; role: string }
 ) {
   Cookies.set(TOKEN_COOKIE_NAME, token, {
     expires: 7,
