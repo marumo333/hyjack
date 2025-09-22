@@ -12,5 +12,5 @@ Route::get('/social/{provider}/callback', [HyjackAuthController::class, 'socialC
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [HyjackAuthController::class, 'logout']);
     Route::get('/user', [HyjackAuthController::class, 'user']);
-    Route::post('/register',[App\Http\Controllers\Auth\HyjackAuthController::class,'register']);
 });
+Route::post('/register',[App\Http\Controllers\Auth\HyjackAuthController::class,'register']);
