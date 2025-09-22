@@ -1,7 +1,7 @@
 // lib/apiClient.ts
 import Cookies from "js-cookie";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE_URL = 'http://localhost/api';
 const TOKEN_COOKIE_NAME = "auth_token";
 const USER_COOKIE_NAME = "user_info";
 
@@ -11,7 +11,7 @@ export function isAuthenticated() {
 }
 
 //ユーザー登録
-export default async function registerUser({
+export async function registerUser({
   email,
   password,
   role
@@ -21,31 +21,28 @@ export default async function registerUser({
   role:string
 }){
   try{
-    const response = await fetch(`${API_BASE}/register`,{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
+    // クロスオリジンリクエストの設定
+    const response = await fetch(`${API_BASE_URL}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      body:JSON.stringify({email,password,role}),
+      credentials: 'include', // クッキー送信に必要
+      body: JSON.stringify({ email, password, role }),
     });
 
-    if(!response.ok){
-      const errorData = await response.json();
-      throw new Error(errorData.message||'登録に失敗しました');
-    }
-
+    // レスポンスのJSONパース
     const data = await response.json();
 
-    //トークンとユーザー情報を保存
-    saveAuthData(data.token,{
-      name:data.user.name,
-      email:data.user.email,
-      avatar:data.user.avatar ||'',
-      role:data.user.role,
-    });
+    // エラーチェック
+    if (!response.ok) {
+      throw new Error(data.message || '登録に失敗しました');
+    }
+    
     return data;
-  }catch(error:any){
-    console.error('登録エラー',error)
+  } catch (error) {
+    console.error('Register error:', error);
     throw error;
   }
 }
@@ -66,7 +63,7 @@ export function getUserFromCookie() {
 // loginWithEmail 関数を修正
 export async function loginWithEmail(email: string, password: string) {
   try {
-    const res = await fetch(`${API_BASE}/login`, {
+    const res = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -109,7 +106,7 @@ export function logout() {
   Cookies.remove(USER_COOKIE_NAME);
 
   // 必要に応じてサーバーサイドのログアウトAPIを呼び出す
-  fetch(`${API_BASE}/logout`, {
+  fetch(`${API_BASE_URL}/logout`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${getAuthToken()}`,
@@ -146,7 +143,7 @@ export function getAuthToken() {
 
 // ソーシャルログインURLを取得
 export async function getSocialLoginUrl(provider: string): Promise<string> {
-  const response = await fetch(`${API_BASE}/social/${provider}/redirect`);
+  const response = await fetch(`${API_BASE_URL}/social/${provider}/redirect`);
   const data = await response.json();
 
   if (data.redirect_url) {
@@ -158,7 +155,7 @@ export async function getSocialLoginUrl(provider: string): Promise<string> {
 // API呼び出し用のヘルパー関数
 export async function apiGet(endpoint: string) {
   const token = getAuthToken();
-  const res = await fetch(`${API_BASE}/${endpoint}`, {
+  const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     credentials: "include",
   });
@@ -167,7 +164,7 @@ export async function apiGet(endpoint: string) {
 
 export async function apiPost(endpoint: string, data: any) {
   const token = getAuthToken();
-  const res = await fetch(`${API_BASE}/${endpoint}`, {
+  const res = await fetch(`${API_BASE_URL}/${endpoint}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
