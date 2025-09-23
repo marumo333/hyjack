@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import  registerUser  from "@/lib/apiClient"; // apiClientを使用
+import  {registerUser}  from "@/lib/apiClient"; // apiClientを使用
 
 export default function Register() {
   const [email, setEmail] = useState("");
