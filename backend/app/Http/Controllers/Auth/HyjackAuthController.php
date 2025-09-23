@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class HyjackAuthController extends Controller
 {
-    // バリデーション
-    public function validateRequest(Request $request)
+    // メソッド名をregisterに変更
+    public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users',
@@ -20,7 +21,7 @@ class HyjackAuthController extends Controller
             'role' => 'required|string|in:admin,customer,staff',
         ]);
 
-        if($validator->fail()){
+        if($validator->fails()){
             return response()->json(['errors'=>$validator->errors()],422);
         }
 
@@ -38,7 +39,45 @@ class HyjackAuthController extends Controller
         return response()->json([
             'user' => $user,
             'token' => $token,
-            'messgae' => 'ユーザー登録が完了しました'
+            'message' => 'ユーザー登録が完了しました'
         ],201);
+    }
+    
+    // ログインメソッド
+    public function emailLogin(Request $request)
+    {
+        $v = Validator::make($request->all(), [
+            'email'    => ['required','email'],
+            'password' => ['required'],
+        ]);
+
+        if ($v->fails()) {
+            return response()->json(['message' => 'バリデーションエラー', 'errors' => $v->errors()], 422);
+        }
+
+        if (!Auth::attempt($request->only('email','password'))) {
+            return response()->json(['message' => '認証失敗'], 401);
+        }
+
+        $user  = $request->user();
+        $token = $user->createToken('api')->plainTextToken; // Sanctumのtoken
+
+        return response()->json([
+            'token' => $token,
+            'user'  => $user,
+        ], 200);
+    }
+    
+    // ユーザー情報取得メソッド
+    public function user(Request $request)
+    {
+        return $request->user();
+    }
+    
+    // ログアウトメソッド
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'ログアウトしました']);
     }
 }
