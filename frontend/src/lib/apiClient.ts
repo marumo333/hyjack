@@ -5,76 +5,7 @@ const API_BASE_URL= 'http://127.0.0.1:8000/api'
 const TOKEN_COOKIE_NAME = "auth_token";
 const USER_COOKIE_NAME = "user_info";
 
-// CSRFトークンを取得する関数を改善
-async function getCsrfToken() {
-  try {
-    console.log('Fetching CSRF token...');
-    
-    // sanctum/csrf-cookieにリクエストを送信
-    const response = await fetch('http://localhost:8000/sanctum/csrf-cookie', {
-      method: 'GET',
-      credentials: 'include', // クッキーを含める
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
-    
-    if (!response.ok) {
-      console.error('CSRF token fetch failed:', response.status);
-      throw new Error('CSRFトークンの取得に失敗しました');
-    }
-    
-    // レスポンスを待ってから次へ進む（より長い待機時間）
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 現在のクッキーからXSRF-TOKENを取得
-    const cookies = document.cookie;
-    console.log('Cookies after CSRF request:', cookies);
-    
-    // XSRF-TOKENクッキーを探す
-    const match = cookies.match(/XSRF-TOKEN=([^;]+)/);
-    if (match) {
-      const token = decodeURIComponent(match[1]);
-      console.log('Found CSRF token:', token.substring(0, 20) + '...');
-      return token;
-    } else {
-      console.warn('No XSRF-TOKEN cookie found after fetching');
-      throw new Error('No XSRF-TOKEN cookie found');
-    }
-  } catch (error) {
-    console.error('CSRF token error:', error);
-    throw error;
-  }
-}
 
-// リクエスト実行関数（CSRFエラー時に自動再試行）
-async function fetchWithCsrfRetry(url: string, options: RequestInit, retries = 1) {
-  try {
-    const response = await fetch(url, options);
-    
-    // CSRFエラーの場合 (419)
-    if (response.status === 419 && retries > 0) {
-      console.log('CSRF token expired or missing, refreshing...');
-      await getCsrfToken(); // 新しいCSRFトークンを取得
-      
-      // 再リクエスト用に新しいoptionsオブジェクトを作成
-      const newOptions = {
-        ...options,
-        headers: {
-          ...options.headers,
-        }
-      };
-      
-      return fetchWithCsrfRetry(url, newOptions, retries - 1);
-    }
-    
-    return response;
-  } catch (error) {
-    console.error('Fetch error:', error);
-    throw error;
-  }
-}
 
 // 認証状態を確認
 export function isAuthenticated() {
@@ -92,29 +23,21 @@ export async function registerUser({
   role:string
 }){
   try {
-    // CSRFトークンを取得し、明示的に値を受け取る
-    const csrfToken = await getCsrfToken();
-    
-    // 取得したcsrfTokenを直接使用する（変数の警告を解消）
-    console.log('Using XSRF token:', csrfToken);
-    
     const options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
-        'X-XSRF-TOKEN': csrfToken,  // クッキーから取得する代わりに直接csrfTokenを使用
       },
       credentials: 'include' as RequestCredentials,
       body: JSON.stringify({ email, password, role }),
     };
-    
-    // 直接APIを呼び出す（再試行機能は使用しない）
+
     const response = await fetch(`${API_BASE_URL}/register`, options);
-    
+
     console.log('Response status:', response.status);
-    
+
     if (!response.ok) {
       let errorData;
       try {
@@ -122,26 +45,20 @@ export async function registerUser({
       } catch (e) {
         errorData = { message: 'レスポンスの解析に失敗しました' };
       }
-      
-      console.error('API error:', errorData);
-      
-      // バリデーションエラー(422)の場合は詳細なエラーメッセージを表示
+
       if (response.status === 422 && errorData.errors) {
-        // 全てのエラーメッセージを連結して表示
         const errorMessages = Object.entries(errorData.errors)
           .map(([field, messages]) => {
-            // messagesが配列であることを確認
             const msgArray = Array.isArray(messages) ? messages : [String(messages)];
             return msgArray.map(msg => `${field}: ${msg}`).join('\n');
           })
           .join('\n');
-          
         throw new Error(errorMessages || 'バリデーションエラーが発生しました');
       }
-      
+
       throw new Error(errorData.message || `サーバーエラー: ${response.status}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
