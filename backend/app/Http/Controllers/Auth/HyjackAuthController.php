@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Socialite\Facades\Socialite;
 
 class HyjackAuthController extends Controller
 {
@@ -79,5 +80,107 @@ class HyjackAuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'ログアウトしました']);
+    }
+
+    //各プロバイダーごとのredirect・callbackメソッド
+
+    //Githubのredirect・callbackメソッド
+    public function redirectToGithub()
+    {
+        return Socialite::driver('github')->redirect();
+    }
+    public function handleCallbackGithub()
+    {
+        try {
+            $githubUser = Socialite::driver('github')->user();
+        } catch (\Exception $e) {
+            return response()->json(['message' => '認証に失敗しました'], 401);
+        }
+
+        $user = User::where('email', $githubUser->getEmail())->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name' => $githubUser->getNickname() ?? $githubUser->getName() ?? 'github_user',
+                'email' => $githubUser->getEmail(),
+                'password' => Hash::make(String::random(24)),
+                'role' => 'customer', // 必要に応じてデフォルトロールを変更
+            ]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+            'message' => 'GitHub認証が完了しました'
+        ]);
+    }
+
+    //Xのredirect・callbackメソッド
+    public function redirectToX(){
+        return socialite::driver('X')->redirect();
+    }
+
+    public function handleCallbackX()
+    {
+        try {
+            $xUser = Socialite::driver('X')->user();
+        } catch (\Exception $e) {
+            return response()->json(['message' => '認証に失敗しました'], 401);
+        }
+
+        $user = User::where('email', $xUser->getEmail())->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name' => $xUser->getNickname() ?? $xUser->getName() ?? 'x_user',
+                'email' => $xUser->getEmail(),
+                'password' => Hash::make(\Illuminate\Support\Str::random(24)),
+                'role' => 'customer',
+            ]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+            'message' => 'X認証が完了しました'
+        ]);
+    }
+
+
+    //Googleのredirect・callbackメソッドを追加
+    public function redirectToGoogle(){
+        return socialite::driver('google')->redirect(); 
+    }
+
+    public function handleCallbackGoogle()
+    {
+        try {
+            $xUser = Socialite::driver('X')->user();
+        } catch (\Exception $e) {
+            return response()->json(['message' => '認証に失敗しました'], 401);
+        }
+
+        $user = User::where('email', $xUser->getEmail())->first();
+
+        if (!$user) {
+            $user = User::create([
+                'name' => $xUser->getNickname() ?? $xUser->getName() ?? 'google_user',
+                'email' => $xUser->getEmail(),
+                'password' => Hash::make(\Illuminate\Support\Str::random(24)),
+                'role' => 'customer',
+            ]);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+            'message' => 'Google認証が完了しました'
+        ]);
     }
 }
