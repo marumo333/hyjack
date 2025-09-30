@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getSocialLoginUrl, logout } from "@/lib/apiClient"; // APIクライアント関数をインポート
+import { logout } from "@/lib/apiClient"; // APIクライアント関数をインポート
 import { getUserFromCookie } from "@/lib/apiClient"; 
 
 type GithubProps = {
@@ -28,19 +28,9 @@ export default function Github({ className }: GithubProps) {
 
 
   // GitHubログイン処理
-  const signInGithub = async () => {
-    try {
-      // Laravel APIからGitHubログイン用URLを取得
-      const redirectUrl = await getSocialLoginUrl('github');
-      if (redirectUrl) {
-        // GitHubログインページにリダイレクト
-        window.location.href = redirectUrl;
-      } else {
-        throw new Error("リダイレクトURLが取得できませんでした");
-      }
-    } catch (error) {
-      console.error("GitHub認証エラー:", error);
-    }
+  const signInGithub = () => {
+    const origin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://127.0.0.1:8000";
+    window.location.href = `${origin}/auth/google/redirect`
   };
 
   // ログアウト処理
@@ -52,6 +42,10 @@ export default function Github({ className }: GithubProps) {
         credentials: "include"
       });
       
+      if(!response.ok){
+        console.error('ログアウト処理に失敗しました：',response.status,await response.text());
+      }
+
       // Cookieを削除
       logout();
       
