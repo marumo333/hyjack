@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getSocialLoginUrl, logout, getUserFromCookie } from "@/lib/apiClient"; // APIクライアント関数をインポート
+import { logout, getUserFromCookie } from "@/lib/apiClient"; // APIクライアント関数をインポート
 
 type XProps = {
   className?: string;
@@ -27,18 +27,8 @@ export default function X({ className }: XProps) {
 
   // Xログイン処理
   const signInX = async () => {
-    try {
-      // Laravel APIからGXログイン用URLを取得
-      const redirectUrl = await getSocialLoginUrl('twitter');
-      if (redirectUrl) {
-        // Xログインページにリダイレクト
-        window.location.href = redirectUrl;
-      } else {
-        throw new Error("リダイレクトURLが取得できませんでした");
-      }
-    } catch (error) {
-      console.error("X認証エラー:", error);
-    }
+    const origin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://127.0.0.1:8000";
+    window.location.href = `${origin}/auth/google/redirect`
   };
 
   // ログアウト処理
@@ -50,6 +40,10 @@ export default function X({ className }: XProps) {
         credentials: "include"
       });
       
+      if(!response.ok){
+        console.error('ログアウト処理に失敗しました：',response.status,await response.text());
+      }
+
       // Cookieを削除
       logout();
       
