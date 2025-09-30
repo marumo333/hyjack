@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { getSocialLoginUrl, logout, getUserFromCookie } from "@/lib/apiClient"; // APIクライアント関数をインポート
+import { logout, getUserFromCookie } from "@/lib/apiClient"; // APIクライアント関数をインポート
 
 type GoogleProps = {
   className?: string;
@@ -26,19 +26,9 @@ export default function Google({ className }: GoogleProps) {
 
 
   // Googleログイン処理
-  const signInGoogle = async () => {
-    try {
-      // Laravel APIからGitHubログイン用URLを取得
-      const redirectUrl = await getSocialLoginUrl('google');
-      if (redirectUrl) {
-        // Googleログインページにリダイレクト
-        window.location.href = redirectUrl;
-      } else {
-        throw new Error("リダイレクトURLが取得できませんでした");
-      }
-    } catch (error) {
-      console.error("Google認証エラー:", error);
-    }
+  const signInGoogle = () => {
+    const origin = process.env.NEXT_PUBLIC_API_ORIGIN ?? "http://127.0.0.1:8000";
+    window.location.href = `${origin}/auth/google/redirect`
   };
 
   // ログアウト処理
@@ -50,6 +40,9 @@ export default function Google({ className }: GoogleProps) {
         credentials: "include"
       });
       
+      if(!response.ok){
+        console.error('ログアウト処理に失敗しました：',response.status,await response.text());
+      }
       // Cookieを削除
       logout();
       
